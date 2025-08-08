@@ -8,6 +8,7 @@ package org.hibernate.orm.test.query.hql;
 
 import java.util.List;
 
+import org.hibernate.dialect.SybaseASEDialect;
 import org.hibernate.query.Query;
 
 import org.hibernate.testing.orm.domain.StandardDomainModel;
@@ -72,7 +73,11 @@ public class ILikeTest {
 		session -> {
 				Query q = session.createQuery( "from BasicEntity be where be.data like 'Prod%'" );
 				List l = q.getResultList();
-				assertEquals( 5, l.size() );
+				int expected = 5;
+				if (scope.getSessionFactory().getJdbcServices().getDialect() instanceof SybaseASEDialect ) {
+					expected = 9; // Sybase is case-insensitive
+				}
+				assertEquals( expected, l.size() );
 			}
 		);
 	}
@@ -83,7 +88,11 @@ public class ILikeTest {
 				session -> {
 					Query q = session.createQuery( "from BasicEntity be where be.data not like 'Prod%'" );
 					List l = q.getResultList();
-					assertEquals( 4, l.size() );
+					int expected = 4;
+					if (scope.getSessionFactory().getJdbcServices().getDialect() instanceof SybaseASEDialect) {
+						expected = 0; // Sybase is case-insensitive
+					}
+					assertEquals( expected, l.size() );
 				}
 		);
 	}
@@ -94,7 +103,11 @@ public class ILikeTest {
 				session -> {
 					Query q = session.createQuery( "from BasicEntity be where be.data like 'Pr%$_%' escape '$'" );
 					List l = q.getResultList();
-					assertEquals( 2, l.size() );
+					int expected = 2;
+					if (scope.getSessionFactory().getJdbcServices().getDialect() instanceof SybaseASEDialect) {
+						expected = 3; // Sybase is case-insensitive
+					}
+					assertEquals( expected, l.size() );
 				}
 		);
 	}
@@ -106,7 +119,11 @@ public class ILikeTest {
 					Query q = session.createQuery( "from BasicEntity be where be.data like 'Pr%$_%' escape :esc" )
 							.setParameter("esc", '$');
 					List l = q.getResultList();
-					assertEquals( 2, l.size() );
+					int expected = 2;
+					if (scope.getSessionFactory().getJdbcServices().getDialect() instanceof SybaseASEDialect) {
+						expected = 3; // Sybase is case-insensitive
+					}
+					assertEquals( expected, l.size() );
 				}
 		);
 	}
@@ -117,7 +134,11 @@ public class ILikeTest {
 				session -> {
 					Query q = session.createQuery( "from BasicEntity be where be.data not like 'Pr%$_%' escape '$'" );
 					List l = q.getResultList();
-					assertEquals( 7, l.size() );
+					int expected = 7;
+					if (scope.getSessionFactory().getJdbcServices().getDialect() instanceof SybaseASEDialect) {
+						expected = 6; // Sybase is case-insensitive
+					}
+					assertEquals( expected, l.size() );
 				}
 		);
 	}
